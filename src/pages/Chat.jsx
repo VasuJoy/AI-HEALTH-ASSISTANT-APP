@@ -337,6 +337,8 @@ export default function Chat({ user }) {
   const [voiceStatus, setVoiceStatus] = useState('')
   const [voiceError, setVoiceError] = useState('')
   const recognitionRef = useRef(null)
+  const voiceRetryCountRef = useRef(0)
+  const maxVoiceRetries = 3
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -377,9 +379,32 @@ export default function Chat({ user }) {
     }
 
     recognition.onerror = (event) => {
-      setVoiceError('Voice recognition error: ' + event.error)
-      setVoiceStatus('')
-      setIsListening(false)
+      const errorMessage = event.error
+      
+      // Retry logic for network and service unavailable errors
+      if ((errorMessage === 'network' || errorMessage === 'service_not_allowed') && 
+          voiceRetryCountRef.current < maxVoiceRetries) {
+        voiceRetryCountRef.current += 1
+        setVoiceError(`Network error. Retrying... (${voiceRetryCountRef.current}/${maxVoiceRetries})`)
+        setVoiceStatus('Retrying in 2 seconds...')
+        setTimeout(() => {
+          if (recognitionRef.current) {
+            recognitionRef.current.start()
+          }
+        }, 2000)
+      } else {
+        voiceRetryCountRef.current = 0
+        const userFriendlyError = 
+          errorMessage === 'network' ? 'Network error. Check your internet connection and try again.' :
+          errorMessage === 'no-speech' ? 'No speech detected. Please speak clearly and try again.' :
+          errorMessage === 'audio-capture' ? 'Microphone access denied. Please allow microphone access in browser settings.' :
+          errorMessage === 'service_not_allowed' ? 'Voice service temporarily unavailable. Please try again in a moment.' :
+          'Voice recognition error: ' + errorMessage
+        
+        setVoiceError(userFriendlyError)
+        setVoiceStatus('')
+        setIsListening(false)
+      }
     }
 
     recognition.onend = () => {
@@ -442,7 +467,19 @@ export default function Chat({ user }) {
       return
     }
     recognitionRef.current.lang = voiceLocales[language] || 'en-IN'
+    voiceRetryCountRef.current = 0
     recognitionRef.current.start()
+  }
+
+  function clearText() {
+    setSymptoms('')
+    setVoiceError('')
+    setVoiceStatus('')
+    setSubmitted(false)
+    setResponse(null)
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
   }
 
   return (
@@ -508,6 +545,13 @@ export default function Chat({ user }) {
             onClick={toggleVoiceInput}
           >
             {isListening ? 'Stop Voice' : 'Start Voice'}
+          </button>
+          <button
+            className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-lg"
+            type="button"
+            onClick={clearText}
+          >
+            Clear Text
           </button>
         </div>
 
