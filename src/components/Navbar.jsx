@@ -104,7 +104,7 @@ const icons = {
 }
 
 const navButtonBase =
-  'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border-2 border-purple-300 bg-purple-50 px-3 text-sm font-bold text-purple-700 shadow-[0_2px_0_rgba(126,34,206,0.24)] transition hover:-translate-y-0.5 hover:border-purple-400 hover:bg-purple-100 focus:outline-none focus:ring-4 focus:ring-purple-100'
+  'inline-flex h-10 w-full shrink-0 items-center justify-start gap-1.5 rounded-full border-2 border-purple-300 bg-purple-50 px-3 text-sm font-bold text-purple-700 shadow-[0_2px_0_rgba(126,34,206,0.24)] transition hover:-translate-y-0.5 hover:border-purple-400 hover:bg-purple-100 focus:outline-none focus:ring-4 focus:ring-purple-100 sm:justify-center lg:w-auto'
 
 export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate()
@@ -116,11 +116,11 @@ export default function Navbar({ user, onLogout }) {
 
   return (
     <nav className="border-b border-emerald-200 bg-gradient-to-r from-emerald-100 via-violet-100 to-purple-200 px-3 py-3 shadow-sm">
-      <div className="mx-auto flex w-full max-w-[1800px] flex-wrap items-center justify-between gap-2 xl:flex-nowrap">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 xl:flex-nowrap">
+      <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid w-full min-w-0 grid-cols-2 items-center gap-2 lg:flex lg:flex-1 lg:flex-nowrap">
           <Link
             to="/"
-            className="mr-1 inline-flex h-10 shrink-0 items-center gap-2 rounded-full border-2 border-emerald-700 bg-emerald-50 px-3 text-lg font-bold tracking-tight text-emerald-700 shadow-[0_3px_0_rgba(4,120,87,0.25)] transition hover:bg-emerald-100 hover:text-emerald-800"
+            className="col-span-2 inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-full border-2 border-emerald-700 bg-emerald-50 px-3 text-lg font-bold tracking-tight text-emerald-700 shadow-[0_3px_0_rgba(4,120,87,0.25)] transition hover:bg-emerald-100 hover:text-emerald-800 sm:w-auto sm:justify-start lg:col-span-1 lg:mr-1"
           >
             {icons.brand}
             AI Health Assistant
@@ -168,16 +168,16 @@ export default function Navbar({ user, onLogout }) {
           </Link>
         </div>
 
-        <div className="ml-auto flex w-[155px] shrink-0 flex-col items-end gap-1.5">
+        <div className="flex w-full shrink-0 items-center justify-between gap-2 lg:ml-auto lg:w-[155px] lg:flex-col lg:items-end lg:justify-start lg:gap-1.5">
           {user ? (
             <>
-              <div className="flex h-8 w-full items-center justify-center gap-1.5 overflow-hidden rounded-full bg-purple-50 px-2 text-xs text-purple-700">
+              <div className="flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-full bg-purple-50 px-2 text-xs text-purple-700 lg:h-8 lg:w-full lg:flex-none">
                 {icons.user}
                 <span className="min-w-0 truncate font-medium leading-none">{user.name || user.email}</span>
               </div>
               <button
                 onClick={handleLogout}
-                className="inline-flex h-8 w-[105px] items-center justify-center gap-1.5 rounded-full bg-red-600 px-3 text-sm font-semibold leading-none text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-100"
+                className="inline-flex h-9 w-[112px] shrink-0 items-center justify-center gap-1.5 rounded-full bg-red-600 px-3 text-sm font-semibold leading-none text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-100 lg:h-8 lg:w-[105px]"
               >
                 {icons.logout}
                 <span className="leading-none">Logout</span>
