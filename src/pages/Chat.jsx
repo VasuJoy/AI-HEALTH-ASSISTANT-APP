@@ -613,6 +613,8 @@ export default function Chat({ user }) {
   const [symptoms, setSymptoms] = useState('')
   const [language, setLanguage] = useState('en')
   const [response, setResponse] = useState(null)
+  const [isAiLoading, setIsAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
   const [location, setLocation] = useState(null)
   const [geoError, setGeoError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -779,8 +781,9 @@ export default function Chat({ user }) {
   )
   const whatsappLink = `https://wa.me/9160360091?text=${whatsappText}`
 
-  function handleSubmit() {
+  async function handleSubmit() {
     setSubmitted(true)
+    setAiError('')
     if (!symptoms.trim()) {
       const labels = nativeText[language] || nativeText.en
       setResponse({
@@ -797,7 +800,38 @@ export default function Chat({ user }) {
       return
     }
 
-    setResponse(analyzeSymptoms(symptoms, language))
+    const fallbackResponse = analyzeSymptoms(symptoms, language)
+    setIsAiLoading(true)
+
+    try {
+      const aiResponse = await fetch('/api/health-advice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symptoms,
+          language,
+          user: {
+            name: user?.name,
+            email: user?.email,
+          },
+        }),
+      })
+
+      const data = await aiResponse.json()
+
+      if (!aiResponse.ok) {
+        throw new Error(data.error || 'AI guidance is unavailable right now.')
+      }
+
+      setResponse(data)
+    } catch (error) {
+      setResponse(fallbackResponse)
+      setAiError(`${error.message} Showing local guidance instead.`)
+    } finally {
+      setIsAiLoading(false)
+    }
   }
 
   function handlePlayResponse() {
@@ -871,6 +905,8 @@ export default function Chat({ user }) {
     setVoiceStatus('')
     setSubmitted(false)
     setResponse(null)
+    setAiError('')
+    setIsAiLoading(false)
     setSpeechStatus('')
     setSpeechError('')
     setIsSpeaking(false)
@@ -938,11 +974,12 @@ export default function Chat({ user }) {
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <button
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-green-600 px-6 font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-100"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-green-600 px-6 font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-100 disabled:cursor-not-allowed disabled:bg-green-300"
             type="button"
             onClick={handleSubmit}
+            disabled={isAiLoading}
           >
-            Submit
+            {isAiLoading ? 'Analyzing...' : 'Submit'}
           </button>
           <button
             className={`inline-flex h-12 items-center justify-center rounded-xl px-6 font-semibold text-white shadow-sm transition focus:outline-none focus:ring-4 ${isListening ? 'bg-red-600 hover:bg-red-700 focus:ring-red-100' : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-100'}`}
@@ -965,6 +1002,14 @@ export default function Chat({ user }) {
         )}
         {voiceError && (
           <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{voiceError}</p>
+        )}
+        {isAiLoading && (
+          <p className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            AI is reading the symptoms and preparing safe guidance...
+          </p>
+        )}
+        {aiError && (
+          <p className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">{aiError}</p>
         )}
 
         <div className="mt-8 space-y-6">
