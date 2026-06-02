@@ -66,6 +66,39 @@ function normalizeGuidance(value, language) {
   }
 }
 
+async function callGemini({ apiKey, model, prompt }) {
+  const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 900,
+        responseMimeType: 'application/json',
+      },
+    }),
+  })
+
+  const data = await aiResponse.json()
+  if (!aiResponse.ok) {
+    const message = data.error?.message || `Gemini request failed for ${model}`
+    const error = new Error(message)
+    error.status = aiResponse.status
+    error.model = model
+    throw error
+  }
+
+  return data
+}
+
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
     response.status(405).json({ error: 'Method not allowed' })
@@ -123,30 +156,29 @@ Return only valid JSON with this exact shape:
 }
 `
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
-    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 900,
-          responseMimeType: 'application/json',
-        },
-      }),
-    })
+    const preferredModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+    ].filter(Boolean)
+    const models = [...new Set(preferredModels)]
 
-    const data = await aiResponse.json()
-    if (!aiResponse.ok) {
-      response.status(aiResponse.status).json({ error: data.error?.message || 'Gemini request failed' })
+    let data = null
+    let lastError = null
+    for (const model of models) {
+      try {
+        data = await callGemini({ apiKey, model, prompt })
+        break
+      } catch (error) {
+        lastError = error
+      }
+    }
+
+    if (!data) {
+      response.status(lastError?.status || 503).json({
+        error: lastError?.message || 'Gemini guidance is unavailable',
+      })
       return
     }
 
