@@ -26,7 +26,11 @@ export default function Register({ onLogin }) {
     e.preventDefault()
     setError('')
 
-    const { name, email, mobile, whatsapp, password, confirmPassword } = formData
+    const name = formData.name.trim()
+    const email = formData.email.trim()
+    const mobile = formData.mobile.trim()
+    const whatsapp = formData.whatsapp.trim()
+    const { password, confirmPassword } = formData
 
     if (!name || !email || !mobile || !whatsapp || !password || !confirmPassword) {
       setError('Please fill in all fields.')
@@ -48,8 +52,8 @@ export default function Register({ onLogin }) {
       return
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.')
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+      setError('Password must be at least 8 characters and include both letters and numbers.')
       return
     }
 
@@ -76,9 +80,9 @@ export default function Register({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-emerald-50 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-lg p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Create Account</h1>
             <p className="text-slate-600">Join AI Health Assistant today</p>
@@ -101,7 +105,7 @@ export default function Register({ onLogin }) {
                 placeholder="John Doe"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
             </div>
 
@@ -115,7 +119,7 @@ export default function Register({ onLogin }) {
                 placeholder="your@email.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
             </div>
 
@@ -129,7 +133,7 @@ export default function Register({ onLogin }) {
                 placeholder="9876543210"
                 value={formData.mobile}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
             </div>
 
@@ -143,7 +147,7 @@ export default function Register({ onLogin }) {
                 placeholder="9876543210"
                 value={formData.whatsapp}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
               <p className="text-xs text-slate-500 mt-1">
                 We'll use this number to send you health guidance and updates
@@ -157,10 +161,10 @@ export default function Register({ onLogin }) {
               <input
                 type="password"
                 name="password"
-                placeholder="At least 6 characters"
+                placeholder="At least 8 letters and numbers"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
             </div>
 
@@ -174,14 +178,14 @@ export default function Register({ onLogin }) {
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium py-3 rounded-lg transition"
+              className="w-full rounded-xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:bg-green-400"
             >
               {loading ? 'Creating account...' : 'Register'}
             </button>

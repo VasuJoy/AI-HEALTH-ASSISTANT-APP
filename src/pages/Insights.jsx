@@ -1,11 +1,47 @@
 import { Link } from 'react-router-dom'
 
-const sectionClass = 'mb-8'
+const sectionClass = 'mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm'
+
+const insightStats = [
+  { value: '5', label: 'regional languages' },
+  { value: '3', label: 'support channels' },
+  { value: '108', label: 'emergency escalation' },
+]
 
 export default function Insights() {
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-8">
-      <div className="bg-white rounded-3xl shadow p-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-950 text-white shadow-xl shadow-emerald-950/10">
+        <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.25fr_0.75fr]">
+          <div>
+            <span className="inline-flex rounded-full border border-emerald-300/40 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100">
+              Product insight
+            </span>
+            <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+              Health access insight built for local-language care.
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-emerald-50">
+              Problem discovery, concept definition, and market positioning for an AI health assistant designed for non-English-speaking and underserved communities.
+            </p>
+            <Link
+              to="/"
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+            >
+              Back to home
+            </Link>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {insightStats.map((stat) => (
+              <div key={stat.label} className="rounded-xl bg-white/10 p-4 ring-1 ring-white/10">
+                <p className="text-3xl font-bold">{stat.value}</p>
+                <p className="mt-1 text-sm text-emerald-50">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="hidden">
         <h1 className="text-4xl font-bold mb-4">Team Insight Engineers Pro</h1>
         <p className="text-slate-600 mb-4">
           Phase 1: Problem Discovery & Concept Definition for reliable health access to non-English-speaking and underserved communities.
@@ -29,6 +65,27 @@ export default function Insights() {
           <li>Heavy dependence on unverified advice through WhatsApp and social media.</li>
           <li>Limited access to doctors for early, non-critical health queries.</li>
         </ul>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <h2 className="text-lg font-semibold text-emerald-950">User pain</h2>
+          <p className="mt-2 text-sm leading-6 text-emerald-900">
+            Health apps are often text-heavy, English-first, and difficult for low-literacy users.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5">
+          <h2 className="text-lg font-semibold text-teal-950">Product wedge</h2>
+          <p className="mt-2 text-sm leading-6 text-teal-900">
+            Voice-first symptom capture with simple guidance, safety notes, and escalation.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-lime-200 bg-lime-50 p-5">
+          <h2 className="text-lg font-semibold text-lime-950">Trust channel</h2>
+          <p className="mt-2 text-sm leading-6 text-lime-900">
+            WhatsApp follow-up and nearby care suggestions make support easier to act on.
+          </p>
+        </div>
       </section>
 
       <section className={sectionClass}>

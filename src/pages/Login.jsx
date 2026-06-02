@@ -11,14 +11,20 @@ export default function Login({ onLogin }) {
   function handleLogin(e) {
     e.preventDefault()
     setError('')
+    const cleanEmail = email.trim()
 
-    if (!email || !password) {
+    if (!cleanEmail || !password) {
       setError('Please fill in all fields.')
       return
     }
 
-    if (!email.includes('@') && !/^\d{10}$/.test(email)) {
+    if (!cleanEmail.includes('@') && !/^\d{10}$/.test(cleanEmail)) {
       setError('Please enter a valid email or 10-digit mobile number.')
+      return
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+      setError('Password must be at least 8 characters and include both letters and numbers.')
       return
     }
 
@@ -26,7 +32,7 @@ export default function Login({ onLogin }) {
     setTimeout(() => {
       const user = {
         id: Date.now().toString(),
-        email: email,
+        email: cleanEmail,
         loginTime: new Date().toLocaleString(),
       }
       localStorage.setItem('user', JSON.stringify(user))
@@ -37,9 +43,9 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-blue-50 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-lg p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">AI Health Assistant</h1>
             <p className="text-slate-600">Log in to access health guidance</p>
@@ -61,7 +67,7 @@ export default function Login({ onLogin }) {
                 placeholder="your@email.com or 9876543210"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
@@ -71,17 +77,17 @@ export default function Login({ onLogin }) {
               </label>
               <input
                 type="password"
-                placeholder="Enter your password"
+                placeholder="At least 8 letters and numbers"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 rounded-lg transition"
+              className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-400"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
@@ -101,7 +107,7 @@ export default function Login({ onLogin }) {
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <p className="text-xs text-slate-600">
-              <strong>Demo:</strong> Use any email/mobile and password to test the app.
+              <strong>Demo:</strong> Use any email/mobile and an 8+ character alphanumeric password.
             </p>
           </div>
         </div>

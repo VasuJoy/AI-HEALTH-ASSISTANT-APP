@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const symptomRules = [
   {
@@ -32,7 +32,6 @@ function analyzeSymptoms(text) {
 
   if (!match) {
     return {
-      title: 'General guidance',
       summary: 'Your symptoms need a closer look. Please stay hydrated, rest, and consult a health worker if symptoms continue.',
       tablets: ['Paracetamol for pain or fever', 'ORS for dehydration'],
       treatment: 'Rest, drink plenty of fluids, and monitor your symptoms.',
@@ -40,21 +39,32 @@ function analyzeSymptoms(text) {
     }
   }
 
-  return {
-    title: 'Recommended next steps',
-    summary: match.summary,
-    tablets: match.tablets,
-    treatment: match.treatment,
-    precautions: match.precautions,
-  }
+  return match
+}
+
+function formatBotMessage(analysis) {
+  return [
+    analysis.summary,
+    '',
+    'Suggested tablets:',
+    ...analysis.tablets.map((tablet) => `- ${tablet}`),
+    '',
+    'Treatment:',
+    analysis.treatment,
+    '',
+    'Precautions:',
+    ...analysis.precautions.map((item) => `- ${item}`),
+    '',
+    'Emergency: Call 108 or visit the nearest hospital if symptoms worsen.',
+  ].join('\n')
 }
 
 export default function WhatsAppChat({ user }) {
   const [messages, setMessages] = useState([
     {
-      id: 1,
+      id: Date.now(),
       type: 'bot',
-      text: 'Hello! 👋 Welcome to AI Health Assistant. How can I help you today? Please describe your symptoms.',
+      text: 'Hello! Welcome to AI Health Assistant. Please describe your symptoms.',
       timestamp: new Date(),
     },
   ])
@@ -62,115 +72,95 @@ export default function WhatsAppChat({ user }) {
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   function handleSendMessage() {
-    if (!input.trim()) return
+    const messageText = input.trim()
+    if (!messageText || loading) return
 
-    // Add user message
-    const userMessage = {
-      id: messages.length + 1,
-      type: 'user',
-      text: input,
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: 'user',
+        text: messageText,
+        timestamp: new Date(),
+      },
+    ])
     setInput('')
     setLoading(true)
 
-    // Simulate bot response delay
     setTimeout(() => {
-      const analysis = analyzeSymptoms(input)
-      const botMessage = {
-        id: messages.length + 2,
-        type: 'bot',
-        text: `${analysis.summary}\n\n💊 Suggested tablets:\n${analysis.tablets.map((t) => `• ${t}`).join('\n')}\n\n🏥 Treatment:\n${analysis.treatment}\n\n⚠️ Precautions:\n${analysis.precautions.map((p) => `• ${p}`).join('\n')}`,
-        timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, botMessage])
+      const analysis = analyzeSymptoms(messageText)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          type: 'bot',
+          text: formatBotMessage(analysis),
+          timestamp: new Date(),
+        },
+      ])
       setLoading(false)
-    }, 1000)
+    }, 700)
   }
 
-  function handleKeyPress(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
+  function handleKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
       handleSendMessage()
     }
   }
 
   function openWhatsAppChat() {
     const symptomsList = messages
-      .filter((m) => m.type === 'user')
-      .map((m) => m.text)
+      .filter((message) => message.type === 'user')
+      .map((message) => message.text)
       .join(', ')
-
     const whatsappText = encodeURIComponent(
       `Hi, I need health guidance for: ${symptomsList || 'general health query'} (from AI Health Assistant app)`
     )
-    const whatsappLink = `https://wa.me/9160360091?text=${whatsappText}`
-    window.open(whatsappLink, '_blank')
+    window.open(`https://wa.me/9160360091?text=${whatsappText}`, '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-emerald-50">
-      <div className="max-w-2xl mx-auto p-4 h-screen flex flex-col">
-        {/* Header */}
-        <div className="bg-white rounded-t-3xl shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <span className="text-green-600">💬</span> WhatsApp Health Chat
-              </h1>
+    <div className="min-h-screen bg-emerald-50">
+      <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-3xl flex-col px-4 py-6 sm:px-6">
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-slate-950">WhatsApp Health Chat</h1>
               {user && (
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="mt-1 truncate text-sm text-slate-600">
                   Chat with {user.name || user.email}
                 </p>
               )}
             </div>
             <button
+              type="button"
               onClick={openWhatsAppChat}
-              className="bg-[#25D366] hover:bg-[#1ebe5d] text-white px-4 py-2 rounded-full flex items-center gap-2"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#25D366] px-4 text-sm font-semibold text-white transition hover:bg-[#1ebe5d] focus:outline-none focus:ring-4 focus:ring-emerald-100"
             >
-              <span>📱</span> Open in WhatsApp
+              Open in WhatsApp
             </button>
           </div>
         </div>
 
-        {/* Chat Messages */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm p-6 overflow-y-auto space-y-4 mb-4">
+        <div className="mb-4 flex-1 space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.type === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
+            <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-3xl ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   message.type === 'user'
-                    ? 'bg-green-600 text-white rounded-br-none'
-                    : 'bg-slate-100 text-slate-900 rounded-bl-none'
+                    ? 'rounded-br-md bg-green-600 text-white'
+                    : 'rounded-bl-md bg-slate-100 text-slate-900'
                 }`}
               >
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {message.text}
-                </p>
-                <p
-                  className={`text-xs mt-2 ${
-                    message.type === 'user'
-                      ? 'text-green-100'
-                      : 'text-slate-500'
-                  }`}
-                >
-                  {message.timestamp.toLocaleTimeString()}
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.text}</p>
+                <p className={`mt-2 text-xs ${message.type === 'user' ? 'text-green-100' : 'text-slate-500'}`}>
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>
@@ -178,12 +168,8 @@ export default function WhatsAppChat({ user }) {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-slate-100 text-slate-900 px-4 py-3 rounded-3xl rounded-bl-none">
-                <div className="flex gap-2">
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-200"></div>
-                </div>
+              <div className="rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                Preparing guidance...
               </div>
             </div>
           )}
@@ -191,28 +177,27 @@ export default function WhatsAppChat({ user }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
-        <div className="bg-white rounded-b-3xl shadow-sm p-4 flex gap-3">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Describe your symptoms... (e.g., fever, cough, headache)"
-            className="flex-1 border border-slate-300 rounded-2xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-            rows="3"
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={loading || !input.trim()}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white px-6 py-3 rounded-2xl font-medium flex items-center justify-center transition h-fit"
-          >
-            <span className="text-xl">📤</span>
-          </button>
-        </div>
-
-        {/* Info Footer */}
-        <div className="text-center mt-4 text-xs text-slate-500">
-          <p>💡 Tip: Click "Open in WhatsApp" to continue this conversation on WhatsApp</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <textarea
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Describe your symptoms, for example fever, cough, headache..."
+              className="min-h-[92px] flex-1 resize-none rounded-xl border border-slate-300 p-3 text-sm outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+            />
+            <button
+              type="button"
+              onClick={handleSendMessage}
+              disabled={loading || !input.trim()}
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-green-600 px-6 font-semibold text-white transition hover:bg-green-700 disabled:bg-slate-400 sm:h-auto"
+            >
+              Send
+            </button>
+          </div>
+          <p className="mt-3 text-center text-xs text-slate-500">
+            Tip: Click "Open in WhatsApp" to continue this conversation on WhatsApp.
+          </p>
         </div>
       </div>
     </div>
