@@ -6,16 +6,9 @@ const languageNames = {
   ta: 'Tamil',
 }
 
-function extractOutputText(data) {
-  if (typeof data.output_text === 'string') return data.output_text
-
-  const textParts = []
-  for (const item of data.output || []) {
-    for (const content of item.content || []) {
-      if (typeof content.text === 'string') textParts.push(content.text)
-    }
-  }
-  return textParts.join('\n')
+function extractGeminiText(data) {
+  const parts = data.candidates?.[0]?.content?.parts || []
+  return parts.map((part) => part.text || '').join('\n')
 }
 
 async function readJsonBody(request) {
@@ -79,9 +72,9 @@ export default async function handler(request, response) {
     return
   }
 
-  const apiKey = process.env.OPENAI_API_KEY
+  const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    response.status(503).json({ error: 'OPENAI_API_KEY is not configured' })
+    response.status(503).json({ error: 'GEMINI_API_KEY is not configured' })
     return
   }
 
@@ -130,32 +123,37 @@ Return only valid JSON with this exact shape:
 }
 `
 
-    const aiResponse = await fetch('https://api.openai.com/v1/responses', {
+    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+    const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-        input: prompt,
-        text: {
-          format: {
-            type: 'json_object',
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }],
           },
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 900,
+          responseMimeType: 'application/json',
         },
-        temperature: 0.2,
-        max_output_tokens: 900,
       }),
     })
 
     const data = await aiResponse.json()
     if (!aiResponse.ok) {
-      response.status(aiResponse.status).json({ error: data.error?.message || 'AI request failed' })
+      response.status(aiResponse.status).json({ error: data.error?.message || 'Gemini request failed' })
       return
     }
 
-    const outputText = extractOutputText(data)
+    const outputText = extractGeminiText(data)
+    if (!outputText) {
+      throw new Error('Gemini returned an empty response')
+    }
     const guidance = normalizeGuidance(parseGuidanceJson(outputText), language)
 
     response.status(200).json(guidance)

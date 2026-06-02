@@ -828,7 +828,7 @@ export default function Chat({ user }) {
       setResponse(data)
     } catch (error) {
       setResponse(fallbackResponse)
-      setAiError(`${error.message} Showing local guidance instead.`)
+      setAiError('AI guidance is unavailable right now. Showing local guidance instead.')
     } finally {
       setIsAiLoading(false)
     }
