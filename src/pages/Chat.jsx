@@ -105,6 +105,44 @@ const nativeText = {
   },
 }
 
+const buttonText = {
+  en: {
+    submit: 'Submit',
+    analyzing: 'Analyzing...',
+    startVoice: 'Start Voice',
+    stopVoice: 'Stop Voice',
+    clearText: 'Clear Text',
+  },
+  hi: {
+    submit: 'जमा करें',
+    analyzing: 'विश्लेषण हो रहा है...',
+    startVoice: 'आवाज शुरू करें',
+    stopVoice: 'आवाज रोकें',
+    clearText: 'टेक्स्ट साफ करें',
+  },
+  te: {
+    submit: 'సమర్పించండి',
+    analyzing: 'విశ్లేషిస్తోంది...',
+    startVoice: 'వాయిస్ ప్రారంభించండి',
+    stopVoice: 'వాయిస్ ఆపండి',
+    clearText: 'టెక్స్ట్ క్లియర్ చేయండి',
+  },
+  kn: {
+    submit: 'ಸಲ್ಲಿಸಿ',
+    analyzing: 'ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...',
+    startVoice: 'ಧ್ವನಿ ಪ್ರಾರಂಭಿಸಿ',
+    stopVoice: 'ಧ್ವನಿ ನಿಲ್ಲಿಸಿ',
+    clearText: 'ಪಠ್ಯ ತೆರವುಗೊಳಿಸಿ',
+  },
+  ta: {
+    submit: 'சமர்ப்பிக்கவும்',
+    analyzing: 'பகுப்பாய்வு செய்கிறது...',
+    startVoice: 'குரலை தொடங்கு',
+    stopVoice: 'குரலை நிறுத்து',
+    clearText: 'உரையை அழிக்கவும்',
+  },
+}
+
 const nativeConditionResponses = {
   hi: {
     'Fever / Infection': {
@@ -776,6 +814,7 @@ export default function Chat({ user }) {
 
   const selectedLanguageLabel =
     nativeDisplayNames[language] || languageOptions.find((opt) => opt.value === language)?.label
+  const labels = buttonText[language] || buttonText.en
   const whatsappText = encodeURIComponent(
     `Hello, I need help with my symptoms: ${symptoms || '...'} (Language: ${selectedLanguageLabel}) - from AI Health Assistant app`
   )
@@ -979,21 +1018,21 @@ export default function Chat({ user }) {
             onClick={handleSubmit}
             disabled={isAiLoading}
           >
-            {isAiLoading ? 'Analyzing...' : 'Submit'}
+            {isAiLoading ? labels.analyzing : labels.submit}
           </button>
           <button
             className={`inline-flex h-12 items-center justify-center rounded-xl px-6 font-semibold text-white shadow-sm transition focus:outline-none focus:ring-4 ${isListening ? 'bg-red-600 hover:bg-red-700 focus:ring-red-100' : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-100'}`}
             type="button"
             onClick={toggleVoiceInput}
           >
-            {isListening ? 'Stop Voice' : 'Start Voice'}
+            {isListening ? labels.stopVoice : labels.startVoice}
           </button>
           <button
             className="inline-flex h-12 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-6 font-semibold text-orange-700 transition hover:bg-orange-100 focus:outline-none focus:ring-4 focus:ring-orange-100"
             type="button"
             onClick={clearText}
           >
-            Clear Text
+            {labels.clearText}
           </button>
         </div>
 
