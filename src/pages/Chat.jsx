@@ -34,6 +34,8 @@ const nativeDisplayNames = {
 
 const nativeText = {
   en: {
+    symptomsLabel: 'Describe your symptoms',
+    symptomsPlaceholder: 'For example: headache, fever, sore throat, nausea',
     title: 'Recommended next steps',
     tablets: 'Suggested tablets',
     treatment: 'Treatment',
@@ -48,6 +50,8 @@ const nativeText = {
     voiceHelp: 'Voice input supports English, Hindi, Telugu, Kannada, and Tamil.',
   },
   hi: {
+    symptomsLabel: 'अपने लक्षणों का वर्णन करें',
+    symptomsPlaceholder: 'उदाहरण: सिरदर्द, बुखार, गले में खराश, मतली',
     title: 'सुझाए गए अगले कदम',
     tablets: 'सुझाई गई दवाइयाँ',
     treatment: 'उपचार',
@@ -62,6 +66,8 @@ const nativeText = {
     voiceHelp: 'वॉइस इनपुट अंग्रेज़ी, हिन्दी, तेलुगु, कन्नड़ और तमिल में उपलब्ध है।',
   },
   te: {
+    symptomsLabel: 'మీ లక్షణాలను వివరించండి',
+    symptomsPlaceholder: 'ఉదాహరణ: తలనొప్పి, జ్వరం, గొంతు నొప్పి, వికారం',
     title: 'సిఫార్సు చేసిన తదుపరి చర్యలు',
     tablets: 'సూచించిన మందులు',
     treatment: 'చికిత్స',
@@ -76,6 +82,8 @@ const nativeText = {
     voiceHelp: 'వాయిస్ ఇన్‌పుట్ ఇంగ్లీష్, హిందీ, తెలుగు, కన్నడ మరియు తమిళ్‌కు మద్దతు ఇస్తుంది.',
   },
   kn: {
+    symptomsLabel: 'ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ವಿವರಿಸಿ',
+    symptomsPlaceholder: 'ಉದಾಹರಣೆ: ತಲೆನೋವು, ಜ್ವರ, ಗಂಟಲು ನೋವು, ವಾಕರಿಕೆ',
     title: 'ಶಿಫಾರಸು ಮಾಡಿದ ಮುಂದಿನ ಹಂತಗಳು',
     tablets: 'ಸೂಚಿಸಿದ ಔಷಧಿಗಳು',
     treatment: 'ಚಿಕಿತ್ಸೆ',
@@ -90,6 +98,8 @@ const nativeText = {
     voiceHelp: 'ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಇಂಗ್ಲಿಷ್, ಹಿಂದಿ, ತೆಲುಗು, ಕನ್ನಡ ಮತ್ತು ತಮಿಳು ಭಾಷೆಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತದೆ.',
   },
   ta: {
+    symptomsLabel: 'உங்கள் அறிகுறிகளை விவரிக்கவும்',
+    symptomsPlaceholder: 'உதாரணம்: தலைவலி, காய்ச்சல், தொண்டை வலி, குமட்டல்',
     title: 'பரிந்துரைக்கப்பட்ட அடுத்த படிகள்',
     tablets: 'பரிந்துரைக்கப்பட்ட மருந்துகள்',
     treatment: 'சிகிச்சை',
@@ -1002,11 +1012,11 @@ export default function Chat({ user }) {
         </div>
 
         <label className="block text-sm font-medium text-slate-700 mb-2">
-          Describe your symptoms
+          {(nativeText[language] || nativeText.en).symptomsLabel}
         </label>
         <textarea
           className="min-h-[150px] w-full resize-y rounded-xl border border-slate-300 p-4 text-base leading-7 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 sm:min-h-[170px]"
-          placeholder="For example: headache, fever, sore throat, nausea"
+          placeholder={(nativeText[language] || nativeText.en).symptomsPlaceholder}
           value={symptoms}
           onChange={(event) => setSymptoms(event.target.value)}
         />
